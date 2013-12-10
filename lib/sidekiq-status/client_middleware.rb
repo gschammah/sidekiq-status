@@ -7,7 +7,7 @@ module Sidekiq::Status
     # @param [Array] msg job arguments
     # @param [String] queue the queue's name
     def call(worker_class, msg, queue)
-      store_status msg['jid'], :queued
+      store_status(msg['jid'], :queued) if worker_class.method_defined? :get_jobeable
       yield
     end
   end

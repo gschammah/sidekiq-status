@@ -22,18 +22,24 @@ module Sidekiq::Status
     # @param [Array] msg job args, should have jid format
     # @param [String] queue queue name
     def call(worker, msg, queue)
-      # a way of overriding default expiration time,
-      # so worker wouldn't lose its data
-      worker.expiration = @expiration  if worker.respond_to? :expiration
+      if worker.respond_to? :get_jobeable
+        begin
+          # a way of overriding default expiration time,
+          # so worker wouldn't lose its data
+          worker.expiration = @expiration  if worker.respond_to? :expiration
 
-      store_status worker.jid, :working,  @expiration
-      yield
-      store_status worker.jid, :complete, @expiration
-    rescue Worker::Stopped
-      store_status worker.jid, :stopped, @expiration
-    rescue
-      store_status worker.jid, :failed,  @expiration
-      raise
+          store_status worker.jid, :working,  @expiration
+          yield
+          store_status worker.jid, :complete, @expiration
+        rescue Worker::Stopped
+          store_status worker.jid, :stopped, @expiration
+        rescue
+          store_status worker.jid, :failed,  @expiration
+          raise
+        end
+      else
+        yield
+      end
     end
   end
 end
