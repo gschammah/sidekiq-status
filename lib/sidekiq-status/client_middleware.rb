@@ -7,8 +7,9 @@ module Sidekiq::Status
     # @param [Array] msg job arguments
     # @param [String] queue the queue's name
     def call(worker_class, msg, queue)
-      if worker_class.method_defined? :get_job_id
-        job_id = worker_class.new.get_job_id(*msg['args'])
+      if worker_class.method_defined?(:get_model) && worker_class.instance_variable_get(:@track_status)
+        model = worker_class.new.get_model(*msg['args'])
+        job_id = Sidekiq::Status.get_job_id(model)
         store_status(job_id, :queued)
       end
       yield

@@ -22,9 +22,10 @@ module Sidekiq::Status
     # @param [Array] msg job args, should have jid format
     # @param [String] queue queue name
     def call(worker, msg, queue)
-      if worker.respond_to? :get_job_id
+      if worker.respond_to?(:get_model) && worker.class.instance_variable_get(:@track_status)
         begin
-          job_id = worker.get_job_id(*msg['args'])
+          model = worker.get_model(*msg['args'])
+          job_id = Sidekiq::Status.get_job_id(model)
           # a way of overriding default expiration time,
           # so worker wouldn't lose its data
           worker.expiration = @expiration  if worker.respond_to? :expiration

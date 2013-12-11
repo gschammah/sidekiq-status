@@ -10,6 +10,9 @@ module Sidekiq::Status
   STATUS = %w(queued working complete stopped failed).map(&:to_sym).freeze
 
   class << self
+    def get_job_id(model)
+      ['queue_status', model.class.to_s, model.id].join(":")
+    end
     # Job status by id
     # @param [String] id job id returned by async_perform
     # @return [String] job status, possible values are in STATUS
@@ -24,7 +27,8 @@ module Sidekiq::Status
       read_hash_for_id(id)
     end
 
-    def status(job_id)
+    def status(model)
+      job_id = get_job_id(model)
       status = get(job_id, :status)
       status.to_sym  unless status.nil?
     end
