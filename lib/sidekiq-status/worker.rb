@@ -6,19 +6,23 @@ module Sidekiq::Status::Worker
 
   attr_accessor :expiration
 
+  def set_job_id(model)
+    @job_id = Sidekiq::Status.get_job_id(model)
+  end
+
   # Stores multiple values into a job's status hash,
   # sets last update time
   # @param [Hash] status_updates updated values
   # @return [String] Redis operation status code
   def store(hash)
-    store_for_id @jid, hash, @expiration
+    store_for_id @job_id, hash, @expiration
   end
 
   # Read value from job status hash
   # @param String|Symbol hask key
   # @return [String]
   def retrieve(name)
-    read_field_for_id @jid, name
+    read_field_for_id @job_id, name
   end
 
   # Sets current task progress
