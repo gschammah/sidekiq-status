@@ -35,4 +35,10 @@ module Sidekiq::Status::Worker
     store({num: num, total: total, message: message})
   end
 
+  def incr(field, increment = 1)
+    Sidekiq.redis do |conn|
+      conn.hincrby(@job_id, field, increment)
+    end
+  end
+
 end
